@@ -1,0 +1,10 @@
+on: workflow_dispatch
+jobs:
+  r:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - run: python3 create_page.py
+        env:
+          NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
+          PAGE_ID: ${{ secrets.NOTION_TEST_PAGE_ID }}
