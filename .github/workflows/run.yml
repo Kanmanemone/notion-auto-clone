@@ -4,7 +4,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
-      - run: python3 create_page.py
+      - run: python3 main.py
         env:
           NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
-          PAGE_ID: ${{ secrets.NOTION_TEST_PAGE_ID }}
+          SOURCE_DB_ID: ${{ secrets.SOURCE_DB_ID }}
+          TARGET_DB_ID: ${{ secrets.TARGET_DB_ID }}

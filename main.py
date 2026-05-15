@@ -6,7 +6,7 @@ r.urlopen(r.Request(
     "https://api.notion.com/v1/pages",
     # 요청 바디: JSON 직렬화 후 bytes로 인코딩
     json.dumps({
-        "parent": {"database_id": os.environ["PAGE_ID"]},  # 생성될 위치 (데이터베이스)
+        "parent": {"database_id": os.environ["TARGET_DB_ID"]},  # 생성될 위치 (데이터베이스)
         "properties": {"title": [{"text": {"content": "Hello Notion"}}]}  # 페이지 제목
     }).encode(),
     # 요청 헤더
