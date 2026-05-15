@@ -15,8 +15,10 @@ def api(method, path, body=None):
     with r.urlopen(req) as res:
         return json.loads(res.read())
 
-# source DB 페이지 목록 조회
-source_pages = api("POST", f"/databases/{os.environ['SOURCE_DB_ID']}/query", {})
+# source DB 페이지 목록 조회 (auto_clone이 체크된 것만)
+source_pages = api("POST", f"/databases/{os.environ['SOURCE_DB_ID']}/query", {
+    "filter": {"property": "auto_clone", "checkbox": {"equals": True}}
+})
 
 for page in source_pages["results"]:
     # 페이지 속성 중 title 타입인 것을 추출
@@ -26,5 +28,5 @@ for page in source_pages["results"]:
         "parent": {"database_id": os.environ["TARGET_DB_ID"]},
         "properties": {"name": title},
     })
-    # [콘솔 출력] api로 복제 의뢰한 페이지의 제목
+    # [콘솔 출력] api로 복제 의뢰(요청)한 페이지의 제목
     print(title["title"][0]["plain_text"] if title["title"] else "(no title)")
