@@ -1,4 +1,4 @@
-import urllib.request as r, json, os
+import urllib.request as r, json, os, glob
 
 # 모든 요청에 공통으로 사용할 헤더
 HEADERS = {
@@ -7,7 +7,7 @@ HEADERS = {
     "Content-Type": "application/json",
 }
 
-# Notion REST API에 HTTP 요청을 보내고 응답으로 JSON을 받음
+# Notion REST API에 HTTP 요청을 보내고 응답으로 JSON을 받는 범용 함수
 def api(method, path, body=None):
     req = r.Request("https://api.notion.com/v1" + path,
                     json.dumps(body).encode() if body else None,
@@ -15,10 +15,15 @@ def api(method, path, body=None):
     with r.urlopen(req) as res:
         return json.loads(res.read())
 
-# source DB 페이지 목록 조회 (auto_clone이 체크된 것만)
-source_pages = api("POST", f"/databases/{os.environ['SOURCE_DB_ID']}/query", {
-    "filter": {"property": "auto_clone", "checkbox": {"equals": True}}
-})
+# source_clone_rules 디렉토리의 필터 파일을 읽어 source DB 페이지 조회
+filters = [json.load(open(f)) for f in glob.glob("source_clone_rules/*.json")]
+if len(filters) == 0:
+    query_body = {}
+elif len(filters) == 1:
+    query_body = {"filter": filters[0]}
+else:
+    query_body = {"filter": {"and": filters}}
+source_pages = api("POST", f"/databases/{os.environ['SOURCE_DB_ID']}/query", query_body)
 
 for page in source_pages["results"]:
     # 페이지 속성 중 title 타입인 것을 추출
