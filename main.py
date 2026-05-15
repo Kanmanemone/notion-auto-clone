@@ -1,4 +1,4 @@
-import urllib.request as r, json, os, glob
+﻿import urllib.request as r, json, os, inspect, pkgutil, importlib
 
 # 모든 요청에 공통으로 사용할 헤더
 HEADERS = {
@@ -15,8 +15,15 @@ def api(method, path, body=None):
     with r.urlopen(req) as res:
         return json.loads(res.read())
 
-# source_clone_rules 디렉토리의 필터 파일을 읽어 source DB 페이지 조회
-filters = [json.load(open(f)) for f in glob.glob("source_clone_rules/*.json")]
+# source_clone_rules 순회해서 복제할지 말지의 조건(filter) 모으기
+filters = []
+for m in pkgutil.iter_modules(["source_clone_rules"]):
+    mod = importlib.import_module(f"source_clone_rules.{m.name}")
+    for _, f in inspect.getmembers(mod, inspect.isfunction):
+        if f.__module__ == mod.__name__:  # import한 함수는 제외
+            filters.append(f())
+
+# 조건 개수에 따라 query body의 모양 잡고, source DB 조회
 if len(filters) == 0:
     query_body = {}
 elif len(filters) == 1:
@@ -33,5 +40,4 @@ for page in source_pages["results"]:
         "parent": {"database_id": os.environ["TARGET_DB_ID"]},
         "properties": {"name": title},
     })
-    # [콘솔 출력] api로 복제 의뢰(요청)한 페이지의 제목
     print(title["title"][0]["plain_text"] if title["title"] else "(no title)")
