@@ -145,4 +145,11 @@ notion_db = {
 }
 
 if __name__ == "__main__":
-    print(to_dataclasses(notion_db, root="NotionDatabase"))
+    import sys
+    code = to_dataclasses(notion_db, root="NotionDatabase")
+    if len(sys.argv) >= 3 and sys.argv[1] == "-o":
+        with open(sys.argv[2], "w", encoding="utf-8") as f:
+            f.write(code)
+        print(f"Written to {sys.argv[2]}")
+    else:
+        print(code)
