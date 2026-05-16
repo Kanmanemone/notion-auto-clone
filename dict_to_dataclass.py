@@ -10,20 +10,14 @@ _anon_counter = 0
 
 
 def _pascal(name: str) -> str:
-    ascii_parts = re.split(r"[_\-\s]+", name)
-    result = "".join(p.capitalize() for p in ascii_parts if p and p.isascii() and p.isalpha())
-    if not result:
-        global _anon_counter
-        result = f"Anon{_anon_counter}"
-        _anon_counter += 1
-    return result
+    parts = re.split(r"[_\-\s]+", name)
+    return "".join(p.capitalize() if p.isascii() else p for p in parts if p)
 
 
 def _safe_field(name: str) -> str:
-    s = re.sub(r"[^a-zA-Z0-9_]", "_", name).strip("_")
-    if not s or s[0].isdigit():
-        s = "_" + s
-    return s or "_field"
+    # 숫자로 시작하면 _ 접두사, 하이픐·공백만 제거
+    s = re.sub(r"[\-\s]", "_", name)
+    return ("_" + s) if s and s[0].isdigit() else (s or "_field")
 
 
 def _infer(value: Any, hint: str) -> str:
