@@ -1,4 +1,6 @@
-﻿import urllib.request as r, json, os, inspect, pkgutil, importlib
+﻿import urllib.request as r, json, os
+import custom_filter
+from notion_filter import NotionFilter
 
 # 모든 요청에 공통으로 사용할 헤더
 HEADERS = {
@@ -15,21 +17,34 @@ def api(method, path, body=None):
     with r.urlopen(req) as res:
         return json.loads(res.read())
 
-# source_clone_rules 순회해서 복제할지 말지의 조건(filter) 모으기
-filters = []
-for m in pkgutil.iter_modules(["source_clone_rules"]):
-    mod = importlib.import_module(f"source_clone_rules.{m.name}")
-    for _, f in inspect.getmembers(mod, inspect.isfunction):
-        if f.__module__ == mod.__name__:  # import한 함수는 제외
-            filters.append(f())
+# 특정 페이지를 복제할지 말지를 정하는, 사용자 정의 조건 가져오기
+and_filters = custom_filter.and_filters(NotionFilter()).filters
+or_filters = custom_filter.or_filters(NotionFilter()).filters
 
-# 조건 개수에 따라 query body의 모양 잡고, source DB 조회
-if len(filters) == 0:
-    query_body = {}
-elif len(filters) == 1:
-    query_body = {"filter": filters[0]}
+# 아래와 같은 형태로 and 조건과 or 조건을 조합하여, query_body 만들기 → source DB에서 복제할 페이지 가져오기
+# {
+#     "filter": {
+#         "or": [
+#             {
+#                 "and": [
+#                     aaa,
+#                     bbb,
+#                     ccc
+#                 ]
+#             },
+#             ddd,
+#             eee
+#         ]
+#     }
+# }
+if and_filters and or_filters:
+    query_body = {"filter": {"or": [{"and": and_filters}, *or_filters]}}
+elif and_filters:
+    query_body = {"filter": {"and": and_filters}}
+elif or_filters:
+    query_body = {"filter": {"or": or_filters}}
 else:
-    query_body = {"filter": {"and": filters}}
+    query_body = {}
 source_pages = api("POST", f"/databases/{os.environ['SOURCE_DB_ID']}/query", query_body)
 
 for page in source_pages["results"]:
