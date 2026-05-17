@@ -1,5 +1,5 @@
 from calendar import monthrange
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 from typing import Any
 
 from notion_filters.filter_logic import and_, or_
@@ -7,7 +7,7 @@ from notion_filters.notion_filter import NotionFilter as f
 
 
 def build_filter() -> dict[str, Any] | None:
-    today = datetime.now().astimezone()
+    today = datetime.now(timezone(timedelta(hours=9)))  # astimezone() 대신 KST 명시: GitHub Actions는 UTC 환경이라 OS 타임존에 의존하면 날짜가 달라짐
     today_str = today.date().isoformat()  # "2026-05-17" 형태. 시간 무시하고 날짜로만 비교
     # today_str = today.isoformat(timespec="seconds")  # "2026-05-17T21:25:25+09:00" 형태. 시각까지 비교
 

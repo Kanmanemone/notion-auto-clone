@@ -1,7 +1,7 @@
 import json
 import os
 import urllib.request as r
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 
 import custom_filter
 from notion_filters.filter_compiler import to_notion_filter
@@ -30,7 +30,7 @@ query_body = {"filter": notion_filter} if notion_filter else {}
 source_pages = api("POST", f"/databases/{os.environ['SOURCE_DB_ID']}/query", query_body)
 
 # source DB에서 조회한 페이지들을 target DB에 새 페이지로 생성
-now = datetime.now().astimezone()
+now = datetime.now(timezone(timedelta(hours=9)))  # astimezone() 대신 KST 명시: GitHub Actions는 UTC 환경이라 OS 타임존에 의존하면 날짜가 달라짐
 today_str = now.date().isoformat()
 for page in source_pages["results"]:
     # 페이지 속성 중 title 타입인 것을 추출
