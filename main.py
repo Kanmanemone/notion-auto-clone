@@ -1,6 +1,7 @@
 import json
 import os
 import urllib.request as r
+from datetime import datetime
 
 import custom_filter
 from notion_filters.filter_compiler import to_notion_filter
@@ -28,12 +29,25 @@ notion_filter = to_notion_filter(filter_body)
 query_body = {"filter": notion_filter} if notion_filter else {}
 source_pages = api("POST", f"/databases/{os.environ['SOURCE_DB_ID']}/query", query_body)
 
+# source DB에서 조회한 페이지들을 target DB에 새 페이지로 생성
+now = datetime.now().astimezone()
+today_str = now.date().isoformat()
 for page in source_pages["results"]:
     # 페이지 속성 중 title 타입인 것을 추출
     title = next(v for v in page["properties"].values() if v["type"] == "title")
-    # target DB에 Notion 기본 제목 속성(title)만 복사해서 새 페이지 생성
+    # target DB에 제목과 실행일을 복사해서 새 페이지 생성
     api("POST", "/pages", {
         "parent": {"database_id": os.environ["TARGET_DB_ID"]},
-        "properties": {"name": title},
+        "properties": {
+            "name": title,
+            "date": {
+                "date": {
+                    "start": today_str
+                }
+            },
+            "memo": {
+                "rich_text": [{"text": {"content": now.isoformat()}}]
+            },
+        },
     })
     print(title["title"][0]["plain_text"] if title["title"] else "(no title)")

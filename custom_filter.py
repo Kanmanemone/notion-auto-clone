@@ -33,10 +33,10 @@ def build_filter() -> dict[str, Any] | None:
         ),
         or_(
             # or로 적용되는 특수 조건
-            f.multi_select(name="clone_on_before_or", values=None),
+            # TODO f.multi_select(name="clone_on_before_or", values=None),
             and_(
                 # and로 적용되는 특수 조건
-                f.multi_select(name="clone_on_before_and", values=None),
+                # TODO f.multi_select(name="clone_on_before_and", values=None),
 
                 # 달 (1 ~ 12), 비어 있으면 매월 반복
                 or_(
