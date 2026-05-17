@@ -1,4 +1,8 @@
-on: workflow_dispatch
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 15 * * *" # 한국 시간(KST) 매일 00:00에 실행하려면 GitHub Actions cron은 UTC 기준이라서 15:00 UTC로 써야 합
+
 jobs:
   r:
     runs-on: ubuntu-latest
