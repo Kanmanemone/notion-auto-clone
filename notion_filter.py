@@ -55,3 +55,20 @@ class NotionFilter:
                 "checkbox": {"equals": value}
             }
         )
+
+    # 노션 api의 한계로 '종료일'은 쿼리 불가능. 따라서 항상 start 기준
+    # source DB에서 'date 유형 속성의 종료일'을 표시하는 formula(수식) 유형 속성을 만드는 것이 현재의 최선이다
+    # formula 속성에서 dateEnd() 함수를 쓰면 '종료일'을 표시할 수 있다
+    def date(
+            self,
+            name: str,
+            value: str | None,
+            date_operator: Literal[
+                "equals", "before", "after", "on_or_before", "on_or_after", "past_week", "this_week", "next_week"
+            ] = "equals"):
+        self.filters.append(
+            {
+                "property": name,
+                "date": {date_operator: value} if value is not None else {"is_empty": True}
+            }
+        )

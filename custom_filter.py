@@ -1,5 +1,5 @@
 from calendar import monthrange
-from datetime import date
+from datetime import datetime
 
 from notion_filter import NotionFilter
 
@@ -9,11 +9,24 @@ def and_filters(f: NotionFilter) -> NotionFilter:
         value=True,
     )
 
-    today = date.today()
+    today = datetime.now().astimezone()
+    # 날짜 범위
+    f.date(
+        name="date",
+        value=today.date().isoformat(),  # "2026-05-17" 형태 (시간 무시하고 날짜로만 비교하고 싶은 경우)
+        # value=today.isoformat(timespec="seconds"),  # 2026-05-17T21:25:25+09:00 형태 (시각까지 비교하고 싶은 경우)
+        date_operator="on_or_before",
+    )
+    f.date(
+        name="end_date",
+        value=today.date().isoformat(),
+        date_operator="on_or_after",
+    )
+
     month = today.month  # 1 ~ 12 반환
     monthday = today.day  # 1 ~ 31 반환
-    last_monthday = monthrange(today.year, month)[1]  # 오늘이 속한 달의 마지막 날
     week_of_month = (monthday - 1) // 7 + 1  # "1" ~ "5" 반환
+    last_monthday = monthrange(today.year, month)[1]  # 오늘이 속한 달의 마지막 날
     last_week_of_month = (last_monthday - 1) // 7 + 1  # 오늘이 속한 달의 마지막 주
 
     # 달 (1 ~ 12)
