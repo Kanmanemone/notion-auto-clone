@@ -31,7 +31,8 @@ source_pages = api("POST", f"/databases/{os.environ['SOURCE_DB_ID']}/query", que
 
 # source DB에서 조회한 페이지들을 target DB에 새 페이지로 생성
 now = datetime.now(timezone(timedelta(hours=9)))  # astimezone() 대신 KST 명시: GitHub Actions는 UTC 환경이라 OS 타임존에 의존하면 날짜가 달라짐
-today_str = now.date().isoformat()
+iso = now.isocalendar()
+weekday_str = ["월 (mon)", "화 (tue)", "수 (wed)", "목 (thu)", "금 (fri)", "토 (sat)", "일 (sun)"][now.weekday()]
 for page in source_pages["results"]:
     # 페이지 속성 중 title 타입인 것을 추출
     title = next(v for v in page["properties"].values() if v["type"] == "title")
@@ -40,14 +41,9 @@ for page in source_pages["results"]:
         "parent": {"database_id": os.environ["TARGET_DB_ID"]},
         "properties": {
             "name": title,
-            "date": {
-                "date": {
-                    "start": today_str
-                }
-            },
-            "memo": {
-                "rich_text": [{"text": {"content": now.isoformat()}}]
-            },
+            "extracted_year": {"number": iso.year},
+            "extracted_week_of_year": {"number": iso.week},
+            "extracted_day_of_week": {"select": {"name": weekday_str}},
         },
     })
     print(title["title"][0]["plain_text"] if title["title"] else "(no title)")
