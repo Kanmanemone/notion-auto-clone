@@ -8,6 +8,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
+      - run: python3 -m pip install -r requirements.txt
       - run: python3 main.py
         env:
           NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}

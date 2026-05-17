@@ -1,84 +1,74 @@
 from calendar import monthrange
 from datetime import datetime
+from typing import Any
 
-from notion_filter import NotionFilter
+from notion_filters.filter_logic import and_, or_
+from notion_filters.notion_filter import NotionFilter as f
 
-def and_filters(f: NotionFilter) -> NotionFilter:
-    f.checkbox(
-        name="auto_clone",
-        value=True,
-    )
 
+def build_filter() -> dict[str, Any] | None:
     today = datetime.now().astimezone()
-    # 날짜 범위
-    f.date(
-        name="date",
-        value=today.date().isoformat(),  # "2026-05-17" 형태 (시간 무시하고 날짜로만 비교하고 싶은 경우)
-        # value=today.isoformat(timespec="seconds"),  # 2026-05-17T21:25:25+09:00 형태 (시각까지 비교하고 싶은 경우)
-        date_operator="on_or_before",
+    today_str = today.date().isoformat()  # "2026-05-17" 형태. 시간 무시하고 날짜로만 비교
+    # today_str = today.isoformat(timespec="seconds")  # "2026-05-17T21:25:25+09:00" 형태. 시각까지 비교
+
+    month = today.month
+    monthday = today.day
+    last_monthday = monthrange(today.year, month)[1]
+    week_of_month = (monthday - 1) // 7 + 1
+    last_week_of_month = (last_monthday - 1) // 7 + 1
+    weekday_value = ["월 (mon)", "화 (tue)", "수 (wed)", "목 (thu)", "금 (fri)", "토 (sat)", "일 (sun)"][today.weekday()]
+
+    return and_(
+        f.checkbox(
+            name="auto_clone",
+            value=True,
+        ),
+        or_(
+            and_(
+                # 날짜 범위: 시작일은 오늘 이전/당일이고, 종료일은 오늘 이후/당일인 항목
+                f.date(name="date", value=today_str, date_operator="on_or_before"),
+                f.date(name="end_date", value=today_str, date_operator="on_or_after"),
+            ),
+            f.date(name="date", value=None),
+        ),
+        or_(
+            # or로 적용되는 특수 조건
+            f.multi_select(name="clone_on_before_or", values=None),
+            and_(
+                # and로 적용되는 특수 조건
+                f.multi_select(name="clone_on_before_and", values=None),
+
+                # 달 (1 ~ 12), 비어 있으면 매월 반복
+                or_(
+                    f.multi_select(name="clone_on_month_and", values=[str(month)]),
+                    f.multi_select(name="clone_on_month_and", values=None),
+                ),
+
+                # 일 (1 ~ 31), 비어 있으면 매일 반복
+                or_(
+                    f.multi_select(name="clone_on_monthday_and", values=[str(monthday)]),
+                    f.multi_select(
+                        name="clone_on_monthday_and",
+                        values=["last_date"],
+                    ) if monthday == last_monthday else None,
+                    f.multi_select(name="clone_on_monthday_and", values=None),
+                ),
+
+                # 주차 (1 ~ 5), 비어 있으면 매주 반복
+                or_(
+                    f.multi_select(name="clone_on_week_of_month_and", values=[str(week_of_month)]),
+                    f.multi_select(
+                        name="clone_on_week_of_month_and",
+                        values=["last_week"],
+                    ) if week_of_month == last_week_of_month else None,
+                    f.multi_select(name="clone_on_week_of_month_and", values=None),
+                ),
+
+                # 요일 (월 ~ 일), 비어 있으면 매일 반복
+                or_(
+                    f.multi_select(name="clone_on_weekday_and", values=[weekday_value]),
+                    f.multi_select(name="clone_on_weekday_and", values=None),
+                ),
+            ),
+        ),
     )
-    f.date(
-        name="end_date",
-        value=today.date().isoformat(),
-        date_operator="on_or_after",
-    )
-
-    month = today.month  # 1 ~ 12 반환
-    monthday = today.day  # 1 ~ 31 반환
-    week_of_month = (monthday - 1) // 7 + 1  # "1" ~ "5" 반환
-    last_monthday = monthrange(today.year, month)[1]  # 오늘이 속한 달의 마지막 날
-    last_week_of_month = (last_monthday - 1) // 7 + 1  # 오늘이 속한 달의 마지막 주
-
-    # 달 (1 ~ 12)
-    f.multi_select(
-        name="clone_on_month_and",
-        values=[str(month), None]  # "clone_on_monthday_and" 속성이 비어 있는 페이지도 가져오도록 함
-    )
-
-    # 일 (1 ~ 31)
-    monthday_values: list[str | None] = [str(monthday)]
-    if monthday == last_monthday:
-        monthday_values.append("last_date")
-    monthday_values.append(None)
-    f.multi_select(
-        name="clone_on_monthday_and",
-        values=monthday_values,
-    )
-
-    # 주차 (1 ~ 5)
-    week_of_month_values: list[str | None] = [str(week_of_month)]
-    if week_of_month == last_week_of_month:
-        week_of_month_values.append("last_week")
-    week_of_month_values.append(None)
-    f.multi_select(
-        name="clone_on_week_of_month_and",
-        values=week_of_month_values,
-    )
-
-    # 요일 (월 ~ 일)
-    weekday = today.weekday()
-    if weekday == 0:
-        weekday_value = "월 (mon)"
-    elif weekday == 1:
-        weekday_value = "화 (tue)"
-    elif weekday == 2:
-        weekday_value = "수 (wed)"
-    elif weekday == 3:
-        weekday_value = "목 (thu)"
-    elif weekday == 4:
-        weekday_value = "금 (fri)"
-    elif weekday == 5:
-        weekday_value = "토 (sat)"
-    else:
-        weekday_value = "일 (sun)"
-    f.multi_select(
-        name="clone_on_weekday_and",
-        values=[weekday_value, None],
-    )
-
-    return f
-
-def or_filters(f: NotionFilter) -> NotionFilter:
-    # TODO
-
-    return f

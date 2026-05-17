@@ -1,6 +1,9 @@
-﻿import urllib.request as r, json, os
+import json
+import os
+import urllib.request as r
+
 import custom_filter
-from notion_filter import NotionFilter
+from notion_filters.filter_compiler import to_notion_filter
 
 # 모든 요청에 공통으로 사용할 헤더
 HEADERS = {
@@ -8,6 +11,7 @@ HEADERS = {
     "Notion-Version": "2022-06-28",
     "Content-Type": "application/json",
 }
+
 
 # Notion REST API에 HTTP 요청을 보내고 응답으로 JSON을 받는 범용 함수
 def api(method, path, body=None):
@@ -17,34 +21,11 @@ def api(method, path, body=None):
     with r.urlopen(req) as res:
         return json.loads(res.read())
 
-# 특정 페이지를 복제할지 말지를 정하는, 사용자 정의 조건 가져오기
-and_filters = custom_filter.and_filters(NotionFilter()).filters
-or_filters = custom_filter.or_filters(NotionFilter()).filters
 
-# 아래와 같은 형태로 and 조건과 or 조건을 조합하여, query_body 만들기 → source DB에서 복제할 페이지 가져오기
-# {
-#     "filter": {
-#         "or": [
-#             {
-#                 "and": [
-#                     aaa,
-#                     bbb,
-#                     ccc
-#                 ]
-#             },
-#             ddd,
-#             eee
-#         ]
-#     }
-# }
-if and_filters and or_filters:
-    query_body = {"filter": {"or": [{"and": and_filters}, *or_filters]}}
-elif and_filters:
-    query_body = {"filter": {"and": and_filters}}
-elif or_filters:
-    query_body = {"filter": {"or": or_filters}}
-else:
-    query_body = {}
+# 사용자 정의 조건을 가져와 source DB에서 복제할 페이지를 조회
+filter_body = custom_filter.build_filter()
+notion_filter = to_notion_filter(filter_body)
+query_body = {"filter": notion_filter} if notion_filter else {}
 source_pages = api("POST", f"/databases/{os.environ['SOURCE_DB_ID']}/query", query_body)
 
 for page in source_pages["results"]:
