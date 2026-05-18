@@ -46,3 +46,58 @@ class NotionFilter:
             "property": name,
             "date": {date_operator: value} if value is not None else {"is_empty": True}
         }
+
+    # TODO
+    @staticmethod
+    def files() -> dict[str, Any]:
+        return {}
+
+    # TODO
+    @staticmethod
+    def formula() -> dict[str, Any]:
+        return {}
+
+    # TODO
+    @staticmethod
+    def number() -> dict[str, Any]:
+        return {}
+
+    # TODO
+    @staticmethod
+    def people() -> dict[str, Any]:
+        return {}
+
+    # TODO
+    @staticmethod
+    def relation() -> dict[str, Any]:
+        return {}
+
+    # TODO
+    @staticmethod
+    def rich_text() -> dict[str, Any]:
+        return {}
+
+    # TODO
+    @staticmethod
+    def select() -> dict[str, Any]:
+        return {}
+
+    # TODO
+    @staticmethod
+    def status() -> dict[str, Any]:
+        return {}
+
+    # TODO
+    @staticmethod
+    def timestamp() -> dict[str, Any]:
+        return {}
+
+    # TODO
+    @staticmethod
+    def unique_id() -> dict[str, Any]:
+        return {}
+
+    # TODO
+    @staticmethod
+    def rollup() -> dict[str, Any] | None:
+        return {}
