@@ -3,6 +3,7 @@ import os
 import urllib.request as r
 
 import custom_filter
+import custom_patch
 import custom_property
 from notion_filters.filter_compiler import to_notion_filter
 
@@ -35,7 +36,10 @@ for source_page in source_pages["results"]:
     target_page = api("POST", "/pages", target_page_body)
 
     # 후처리 (post process)
-    # TODO
+    source_patch_body = {"properties": custom_patch.build_source_patch(source_page, target_page)}
+    target_patch_body = {"properties": custom_patch.build_target_patch(source_page, target_page)}
+    api("PATCH", f"/pages/{source_page['id']}", source_patch_body)
+    api("PATCH", f"/pages/{target_page['id']}", target_patch_body)
 
     # 콘솔창 로그
     title = target_page["properties"]["name"]["title"]
