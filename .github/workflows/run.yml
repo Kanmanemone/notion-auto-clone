@@ -1,13 +1,15 @@
 on:
   workflow_dispatch:
   schedule:
-    - cron: "0 15 * * *" # KST 00:00 (GitHub Actions cron은 UTC 기준)
+    # 매일 한국시간 00:22 실행
+    # KST 00:22 = UTC 전날 15:22
+    - cron: "22 15 * * *"
 
 jobs:
   r:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - run: python3 -m pip install -r requirements.txt
       - run: python3 main.py
         env:
