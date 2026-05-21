@@ -80,25 +80,37 @@ class NotionFilter:
             "title": {operator: value} if value is not None else {"is_empty": True},
         }
 
+    @staticmethod
+    def url(
+            name: str,
+            value: str | None,
+            operator: Literal["contains", "does_not_contain", "equals", "does_not_equal", "starts_with", "ends_with", "is_empty", "is_not_empty"] = "equals"
+    ) -> dict[str, Any]:
+        return {
+            "property": name,
+            "url": {operator: value} if value is not None else {"is_empty": True},
+        }
+
     # TODO
     @staticmethod
     def files() -> dict[str, Any]:
         return {}
 
+    # TODO
     @staticmethod
     def formula_date(
-            name: str,
-            value: str | None,
-            date_operator: Literal[
-                "equals", "before", "after", "on_or_before", "on_or_after",
-                "past_week", "this_week", "next_week"
-            ] = "equals"
+            # name: str,
+            # value: str | None,
+            # date_operator: Literal[
+            #     "equals", "before", "after", "on_or_before", "on_or_after",
+            #     "past_week", "this_week", "next_week"
+            # ] = "equals"
     ) -> dict[str, Any]:
         return {
-            "property": name,
-            "formula": {
-                "date": {date_operator: value} if value is not None else {"is_empty": True}
-            }
+            # "property": name,
+            # "formula": {
+            #     "date": {date_operator: value} if value is not None else {"is_empty": True}
+            # }
         }
 
     # TODO

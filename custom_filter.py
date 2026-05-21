@@ -14,14 +14,12 @@ def already_cloned_filter(source_page: dict[str, Any]) -> dict[str, Any] | None:
     today = datetime.now(timezone(timedelta(hours=9)))
     search_range_end_str = today.date().isoformat()
 
-    source_page_title = source_page["properties"]["name"]["title"]
-    source_page_title = source_page_title[0]["plain_text"] if source_page_title else ""
     # minimum_interval_days=7이면 14일에 clone 후 21일, 28일에 재복제 (예: 14 -> 21 -> 28)
     # on_or_after(≥) 사용 시 경계일 당일 제외되므로 +1일 보정
     search_range_start_str = (today.date() - timedelta(days=minimum_interval_days) + timedelta(days=1)).isoformat()
 
     return and_(
-        f.title(name="name", value=source_page_title),
+        f.url(name="source", value=source_page["url"]),
         f.status(name="progress", value="완료"),
         f.date(name="calculated_date", value=search_range_start_str, date_operator="on_or_after"),
         f.date(name="calculated_date", value=search_range_end_str, date_operator="on_or_before"),
