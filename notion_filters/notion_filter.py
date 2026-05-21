@@ -47,10 +47,59 @@ class NotionFilter:
             "date": {date_operator: value} if value is not None else {"is_empty": True}
         }
 
+    @staticmethod
+    def status(
+            name: str,
+            value: str | None,
+            operator: Literal["equals", "does_not_equal", "is_empty", "is_not_empty"] = "equals"
+    ) -> dict[str, Any]:
+        return {
+            "property": name,
+            "status": {operator: value} if value is not None else {"is_empty": True},
+        }
+
+    @staticmethod
+    def rich_text(
+            name: str,
+            value: str | None,
+            operator: Literal["contains", "does_not_contain", "equals", "does_not_equal", "starts_with", "ends_with", "is_empty", "is_not_empty"] = "equals"
+    ) -> dict[str, Any]:
+        return {
+            "property": name,
+            "rich_text": {operator: value} if value is not None else {"is_empty": True},
+        }
+
+    @staticmethod
+    def title(
+            name: str,
+            value: str | None,
+            operator: Literal["contains", "does_not_contain", "equals", "does_not_equal", "starts_with", "ends_with", "is_empty", "is_not_empty"] = "equals"
+    ) -> dict[str, Any]:
+        return {
+            "property": name,
+            "title": {operator: value} if value is not None else {"is_empty": True},
+        }
+
     # TODO
     @staticmethod
     def files() -> dict[str, Any]:
         return {}
+
+    @staticmethod
+    def formula_date(
+            name: str,
+            value: str | None,
+            date_operator: Literal[
+                "equals", "before", "after", "on_or_before", "on_or_after",
+                "past_week", "this_week", "next_week"
+            ] = "equals"
+    ) -> dict[str, Any]:
+        return {
+            "property": name,
+            "formula": {
+                "date": {date_operator: value} if value is not None else {"is_empty": True}
+            }
+        }
 
     # TODO
     @staticmethod
@@ -74,17 +123,7 @@ class NotionFilter:
 
     # TODO
     @staticmethod
-    def rich_text() -> dict[str, Any]:
-        return {}
-
-    # TODO
-    @staticmethod
     def select() -> dict[str, Any]:
-        return {}
-
-    # TODO
-    @staticmethod
-    def status() -> dict[str, Any]:
         return {}
 
     # TODO
