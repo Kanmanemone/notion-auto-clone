@@ -2,8 +2,8 @@ from calendar import monthrange
 from datetime import datetime, timedelta, timezone
 from typing import Any
 
-from notion_filters.filter_logic import and_, or_
-from notion_filters.notion_filter import NotionFilter as f
+from notion.filter_logic import and_, or_
+from notion.filter import NotionFilter as f
 
 
 def build_filter() -> dict[str, Any] | None:
