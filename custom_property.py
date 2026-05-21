@@ -12,6 +12,7 @@ def target_page_properties(page: dict[str, Any]) -> dict[str, Any]:
     return {
         "name": title,
         "memo": {"rich_text": page["properties"]["memo"]["rich_text"]},
+        "duration_hour": {"number": 0},
         "extracted_year": {"number": _iso.year},
         "extracted_week_of_year": {"number": _iso.week},
         "extracted_day_of_week": {"select": {"name": _weekday_str}},
