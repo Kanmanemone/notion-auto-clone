@@ -7,7 +7,7 @@ _iso = _now.isocalendar()
 _weekday_str = ["월 (mon)", "화 (tue)", "수 (wed)", "목 (thu)", "금 (fri)", "토 (sat)", "일 (sun)"][_now.weekday()]
 
 
-def build_properties(page: dict[str, Any]) -> dict[str, Any]:
+def target_page_properties(page: dict[str, Any]) -> dict[str, Any]:
     title = next(v for v in page["properties"].values() if v["type"] == "title")  # title 속성명은 DB마다 달라서 이름 대신 타입으로 탐색
     return {
         "name": title,

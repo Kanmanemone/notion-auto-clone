@@ -2,12 +2,35 @@ from calendar import monthrange
 from datetime import datetime, timedelta, timezone
 from typing import Any
 
-from notion.filter_logic import and_, or_
 from notion.filter import NotionFilter as f
+from notion.filter_logic import and_, or_
 
 
-def build_filter() -> dict[str, Any] | None:
-    today = datetime.now(timezone(timedelta(hours=9)))  # astimezone() 대신 KST 명시: GitHub Actions는 UTC 환경이라 OS 타임존에 의존하면 날짜가 달라짐
+def already_cloned_filter(source_page: dict[str, Any]) -> dict[str, Any] | None:
+    minimum_interval_days = source_page["properties"]["minimum_interval_days"]["number"]
+    if minimum_interval_days is None:
+        minimum_interval_days = 0
+
+    today = datetime.now(timezone(timedelta(hours=9)))
+    search_range_end_str = today.date().isoformat()
+
+    source_page_title = source_page["properties"]["name"]["title"]
+    source_page_title = source_page_title[0]["plain_text"] if source_page_title else ""
+    # minimum_interval_days=7이면 14일에 clone 후 21일, 28일에 재복제 (예: 14 -> 21 -> 28)
+    # on_or_after(≥) 사용 시 경계일 당일 제외되므로 +1일 보정
+    search_range_start_str = (today.date() - timedelta(days=minimum_interval_days) + timedelta(days=1)).isoformat()
+
+    return and_(
+        f.title(name="name", value=source_page_title),
+        f.status(name="progress", value="완료"),
+        f.date(name="calculated_date", value=search_range_start_str, date_operator="on_or_after"),
+        f.date(name="calculated_date", value=search_range_end_str, date_operator="on_or_before"),
+    )
+
+
+def pages_to_clone_filter() -> dict[str, Any] | None:
+    today = datetime.now(
+        timezone(timedelta(hours=9)))  # astimezone() 대신 KST 명시: GitHub Actions는 UTC 환경이라 OS 타임존에 의존하면 날짜가 달라짐
     today_str = today.date().isoformat()  # "2026-05-17" 형태. 시간 무시하고 날짜로만 비교
     # today_str = today.isoformat(timespec="seconds")  # "2026-05-17T21:25:25+09:00" 형태. 시각까지 비교
 
