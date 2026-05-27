@@ -17,16 +17,16 @@ class NotionProperties(dict):
         notion_api.update(page_id=..., properties=props)
     """
 
-    def title(self, name: str, content: str) -> "NotionProperties":
-        self[name] = {"title": [{"type": "text", "text": {"content": content}}]}
+    def title(self, name: str, content: str | list) -> "NotionProperties":
+        self[name] = {"title": content if isinstance(content, list) else [{"type": "text", "text": {"content": content}}]}
         return self
 
     def title_mention(self, name: str, page_id: str) -> "NotionProperties":
         self[name] = {"title": [{"type": "mention", "mention": {"type": "page", "page": {"id": page_id}}}]}
         return self
 
-    def rich_text(self, name: str, content: str) -> "NotionProperties":
-        self[name] = {"rich_text": [{"type": "text", "text": {"content": content}}]}
+    def rich_text(self, name: str, content: str | list) -> "NotionProperties":
+        self[name] = {"rich_text": content if isinstance(content, list) else [{"type": "text", "text": {"content": content}}]}
         return self
 
     def number(self, name: str, value: int | float | None) -> "NotionProperties":
