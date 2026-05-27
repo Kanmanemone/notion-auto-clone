@@ -128,15 +128,23 @@ class NotionFilter:
     def people() -> dict[str, Any]:
         return {}
 
-    # TODO
     @staticmethod
-    def relation() -> dict[str, Any]:
-        return {}
+    def relation(name: str, page_id: str) -> dict[str, Any]:
+        return {
+            "property": name,
+            "relation": {"contains": page_id}
+        }
 
-    # TODO
     @staticmethod
-    def select() -> dict[str, Any]:
-        return {}
+    def select(
+            name: str,
+            value: str | None,
+            operator: Literal["equals", "does_not_equal", "is_empty", "is_not_empty"] = "equals"
+    ) -> dict[str, Any]:
+        return {
+            "property": name,
+            "select": {operator: value} if value is not None else {"is_empty": True},
+        }
 
     # TODO
     @staticmethod

@@ -1,4 +1,6 @@
 import json
+import time
+import urllib.error
 import urllib.request as r
 from typing import Any
 
@@ -24,8 +26,27 @@ class NotionApi:
             self._headers,
             method=method,
         )
-        with r.urlopen(req) as res:
-            return json.loads(res.read())
+
+        time.sleep(0.4)  # Notion API 초당 3건 제한 → 0.4초 간격 유지
+
+        wait = 1
+        for attempt in range(1, 6):  # 최대 5회 시도
+            try:
+                with r.urlopen(req) as res:
+                    return json.loads(res.read())
+
+            except urllib.error.HTTPError as e:
+                is_rate_limit = (e.code == 429)
+                is_last_attempt = (attempt == 5)
+
+                if not is_rate_limit or is_last_attempt:
+                    raise  # 429 외 에러거나 5회 모두 실패 시 그냥 던짐
+
+                # Retry-After 헤더가 있으면 그 값, 없으면 지수 백오프(1→2→4...최대 60초)
+                wait = int(e.headers.get("Retry-After", wait))
+                print(f"Rate limited. {attempt}회 시도 실패, {wait}초 후 재시도...")
+                time.sleep(wait)
+                wait = min(wait * 2, 60)
 
     # noinspection PyShadowingBuiltins
     def read(self, db_id: str, filter: dict[str, Any] | None = None, page_size: int | None = None) -> dict[str, Any]:
