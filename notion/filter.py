@@ -96,21 +96,20 @@ class NotionFilter:
     def files() -> dict[str, Any]:
         return {}
 
-    # TODO
     @staticmethod
     def formula_date(
-            # name: str,
-            # value: str | None,
-            # date_operator: Literal[
-            #     "equals", "before", "after", "on_or_before", "on_or_after",
-            #     "past_week", "this_week", "next_week"
-            # ] = "equals"
+            name: str,
+            value: str | None,
+            date_operator: Literal[
+                "equals", "before", "after", "on_or_before", "on_or_after",
+                "past_week", "this_week", "next_week"
+            ] = "equals"
     ) -> dict[str, Any]:
         return {
-            # "property": name,
-            # "formula": {
-            #     "date": {date_operator: value} if value is not None else {"is_empty": True}
-            # }
+            "property": name,
+            "formula": {
+                "date": {date_operator: value} if value is not None else {"is_empty": True}
+            }
         }
 
     # TODO

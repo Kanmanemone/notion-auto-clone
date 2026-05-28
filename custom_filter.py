@@ -19,10 +19,9 @@ def already_cloned_filter(source_page: dict[str, Any]) -> dict[str, Any] | None:
     search_range_start_str = (today.date() - timedelta(days=minimum_interval_days) + timedelta(days=1)).isoformat()
 
     return and_(
-        f.url(name="source", value=source_page["url"]),
-        f.status(name="progress", value="완료"),
-        f.date(name="calculated_date", value=search_range_start_str, date_operator="on_or_after"),
-        f.date(name="calculated_date", value=search_range_end_str, date_operator="on_or_before"),
+        f.relation(name="schedule", page_id=source_page["id"]),
+        f.formula_date(name="date", value=search_range_start_str, date_operator="on_or_after"),
+        f.formula_date(name="date", value=search_range_end_str, date_operator="on_or_before"),
     )
 
 
@@ -48,7 +47,7 @@ def pages_to_clone_filter() -> dict[str, Any] | None:
             and_(
                 # 날짜 범위: 시작일은 오늘 이전/당일이고, 종료일은 오늘 이후/당일인 항목
                 f.date(name="date", value=today_str, date_operator="on_or_before"),
-                f.date(name="end_date", value=today_str, date_operator="on_or_after"),
+                f.date(name="_end_date", value=today_str, date_operator="on_or_after"),
             ),
             f.date(name="date", value=None),
         ),

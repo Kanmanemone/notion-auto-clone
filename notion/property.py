@@ -49,6 +49,10 @@ class NotionProperties(dict):
         self[name] = {"url": value}
         return self
 
+    def multi_select(self, name: str, values: list) -> "NotionProperties":
+        self[name] = {"multi_select": [{"name": v["name"]} for v in values]}
+        return self
+
     def date(self, name: str, start: str | None, end: str | None = None) -> "NotionProperties":
         if start is not None:
             self[name] = {"date": {"start": start, "end": end}}

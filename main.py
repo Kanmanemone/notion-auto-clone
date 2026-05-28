@@ -25,7 +25,7 @@ for source_page in source_pages["results"]:
     if already_cloned_page["results"]:
         page = already_cloned_page["results"][0]
         title = page["properties"]["name"]["title"]
-        date = page["properties"]["calculated_date"]["formula"]["date"]["start"]
+        date = page["properties"]["date"]["formula"]["date"]["start"]
         print(f"(이미 존재) {title[0]['plain_text'] if title else '(no title)'} | {date}")
         continue
 
