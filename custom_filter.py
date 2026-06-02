@@ -6,17 +6,26 @@ from notion.filter import NotionFilter as f
 from notion.filter_logic import and_, or_
 
 
+def _day_start_iso(dt: datetime) -> str:
+    # Notion은 datetime 속성을 UTC 기준으로 비교하므로, date-only 대신 시각 포함 ISO 문자열 사용
+    return dt.replace(hour=0, minute=0, second=0, microsecond=0).isoformat(timespec="seconds")
+
+
+def _day_end_iso(dt: datetime) -> str:
+    return dt.replace(hour=23, minute=59, second=59, microsecond=0).isoformat(timespec="seconds")
+
+
 def already_cloned_filter(source_page: dict[str, Any]) -> dict[str, Any] | None:
     minimum_interval_days = source_page["properties"]["minimum_interval_days"]["number"]
     if minimum_interval_days is None:
         minimum_interval_days = 0
 
     today = datetime.now(timezone(timedelta(hours=9)))
-    search_range_end_str = today.date().isoformat()
+    search_range_end_str = _day_end_iso(today)
 
     # minimum_interval_days=7이면 14일에 clone 후 21일, 28일에 재복제 (예: 14 -> 21 -> 28)
     # on_or_after(≥) 사용 시 경계일 당일 제외되므로 +1일 보정
-    search_range_start_str = (today.date() - timedelta(days=minimum_interval_days) + timedelta(days=1)).isoformat()
+    search_range_start_str = _day_start_iso(today - timedelta(days=minimum_interval_days - 1))
 
     return and_(
         f.relation(name="schedule", page_id=source_page["id"]),
@@ -46,8 +55,8 @@ def pages_to_clone_filter() -> dict[str, Any] | None:
         or_(
             and_(
                 # 날짜 범위: 시작일은 오늘 이전/당일이고, 종료일은 오늘 이후/당일인 항목
-                f.date(name="date", value=today_str, date_operator="on_or_before"),
-                f.date(name="_end_date", value=today_str, date_operator="on_or_after"),
+                f.date(name="date", value=_day_end_iso(today), date_operator="on_or_before"),
+                f.date(name="_end_date", value=_day_start_iso(today), date_operator="on_or_after"),
             ),
             f.date(name="date", value=None),
         ),
