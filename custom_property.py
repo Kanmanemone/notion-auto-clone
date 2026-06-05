@@ -15,6 +15,7 @@ def target_page_properties(source_page: dict[str, Any]) -> NotionProperties:
         .relation("schedule", source_page["id"])
         .title_mention("name", source_page["id"])
         .rich_text("memo", source_page["properties"]["memo"]["rich_text"])
+        .rich_text("place", source_page["properties"]["place"]["rich_text"])
         .relation("people", *[p["id"] for p in source_page["properties"]["people"]["relation"]])
         .number("duration_hour", 0)
         .number("_source_year", _iso.year)

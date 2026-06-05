@@ -1,3 +1,39 @@
+from copy import deepcopy
+
+
+def _writable_rich_text_item(item: dict) -> dict:
+    # Notion read responses include read-only fields like plain_text, href, and expanded user data.
+    # Keep only the fields accepted by create/update rich_text payloads.
+    writable = {"type": item["type"]}
+
+    if item["type"] == "text":
+        writable["text"] = item["text"]
+    elif item["type"] == "mention":
+        mention = item["mention"]
+        mention_type = mention["type"]
+        mention_value = mention[mention_type]
+
+        writable["mention"] = {"type": mention_type}
+        if isinstance(mention_value, dict) and "id" in mention_value:
+            writable["mention"][mention_type] = {"id": mention_value["id"]}
+        else:
+            writable["mention"][mention_type] = mention_value
+    elif item["type"] == "equation":
+        writable["equation"] = item["equation"]
+
+    if "annotations" in item:
+        writable["annotations"] = item["annotations"]
+
+    return writable
+
+
+def _writable_rich_text(content: str | list) -> str | list:
+    # Normalize rich_text copied from another page before sending it back to Notion.
+    if isinstance(content, list):
+        return [_writable_rich_text_item(deepcopy(item)) for item in content]
+    return content
+
+
 class NotionProperties(dict):
     """
     Notion property dict builder with method chaining.
@@ -26,6 +62,7 @@ class NotionProperties(dict):
         return self
 
     def rich_text(self, name: str, content: str | list) -> "NotionProperties":
+        content = _writable_rich_text(content)
         self[name] = {"rich_text": content if isinstance(content, list) else [{"type": "text", "text": {"content": content}}]}
         return self
 
