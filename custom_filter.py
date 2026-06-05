@@ -49,6 +49,10 @@ def pages_to_clone_filter() -> dict[str, Any] | None:
 
     return and_(
         f.checkbox(
+            name="trashed",
+            value=False,
+        ),
+        f.checkbox(
             name="auto_clone",
             value=True,
         ),
