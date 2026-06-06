@@ -49,13 +49,21 @@ class NotionApi:
                 wait = min(wait * 2, 60)
 
     # noinspection PyShadowingBuiltins
-    def read(self, db_id: str, filter: dict[str, Any] | None = None, page_size: int | None = None) -> dict[str, Any]:
+    def read(
+        self,
+        db_id: str,
+        filter: dict[str, Any] | None = None,
+        page_size: int | None = None,
+        sorts: list[dict[str, str]] | None = None,
+    ) -> dict[str, Any]:
         body: dict[str, Any] = {}
         compiled = to_notion_filter(filter)
         if compiled:
             body["filter"] = compiled
         if page_size is not None:
             body["page_size"] = page_size
+        if sorts:
+            body["sorts"] = sorts
         return self._api("POST", f"/databases/{db_id}/query", body or None)
 
     def create(self, db_id: str, properties: dict[str, Any]) -> dict[str, Any]:

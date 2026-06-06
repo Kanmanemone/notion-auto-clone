@@ -12,7 +12,13 @@ target_db_id = os.environ["TARGET_DB_ID"]
 # 사용자 정의 조건을 가져와 source DB에서 복제할 페이지를 조회
 source_pages = notion_api.read(
     db_id=source_db_id,
-    filter=pages_to_clone_filter()
+    filter=pages_to_clone_filter(),
+    sorts=[
+        {
+            "property": "time_order",
+            "direction": "descending",
+        },
+    ],
 )
 
 for source_page in source_pages["results"]:
